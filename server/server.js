@@ -69,7 +69,7 @@ if (process.env.NODE_ENV === "production") {
 
   // Correct path to React build inside Docker
 
-  const clientBuildPath = path.join(__dirname, "frontend/dist");
+  const clientBuildPath = path.join(__dirname, "client/dist");
   console.log("client build path is ", clientBuildPath);
   server.use("/inkspire", express.static(clientBuildPath));
 
