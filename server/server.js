@@ -73,10 +73,10 @@ if (process.env.NODE_ENV === "production") {
   console.log("client build path is ", clientBuildPath);
   server.use("/inkspire", express.static(clientBuildPath));
 
-  server.get("/inkspire/*", (req, res) => {
-    res.sendFile(path.join(clientBuildPath, "index.html"));
-    console.log("index.html path is ", path.join(clientBuildPath, "index.html"));
-  });
+  // server.get("/inkspire/*", (req, res) => {
+  //   res.sendFile(path.join(clientBuildPath, "index.html"));
+  //   console.log("index.html path is ", path.join(clientBuildPath, "index.html"));
+  // });
 } else {
   // Accept requests from different ports than backend port (3000) for development
   server.use(cors());
