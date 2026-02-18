@@ -60,8 +60,8 @@ if (process.env.NODE_ENV === "production") {
   // Accept requests only from patrykkurpiel.com when in production
   server.use(
     cors({
-      // origin: "http://patrykkurpiel.com", // Your frontend URL
-      origin: "*",
+      origin: "http://patrykkurpiel.com",
+      // origin: "*",
       methods: "GET,POST,PUT,DELETE", // Allowed HTTP methods
       allowedHeaders: "Content-Type,Authorization", // Allowed headers
     })
@@ -70,7 +70,7 @@ if (process.env.NODE_ENV === "production") {
   // Correct path to React build inside Docker
 
   const clientBuildPath = path.join(__dirname, "client/dist");
-  console.log("client build path is ", clientBuildPath);
+  // console.log("client build path is ", clientBuildPath);
   server.use("/inkspire", express.static(clientBuildPath));
 
   // server.get("/inkspire/*", (req, res) => {
