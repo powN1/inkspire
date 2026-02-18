@@ -5,6 +5,7 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import { nanoid } from "nanoid";
+import path from "path";
 // firebase
 import admin from "firebase-admin";
 import { getAuth } from "firebase-admin/auth";
@@ -24,7 +25,7 @@ let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // regex for e
 let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/; // regex for password
 
 // Establish database connection
-const PORT = process.env.PORT || 3003;
+const PORT = process.env.PORT || 3004;
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccountKey),
@@ -54,7 +55,33 @@ const generateUploadUrl = async () => {
 // Middleware so the server can process json
 server.use(express.json());
 // Accept requests from different ports than backend port (3000)
-server.use(cors());
+
+if (process.env.NODE_ENV === "production") {
+  // Accept requests only from patrykkurpiel.com when in production
+  server.use(
+    cors({
+      // origin: "http://patrykkurpiel.com", // Your frontend URL
+      origin: "*",
+      methods: "GET,POST,PUT,DELETE", // Allowed HTTP methods
+      allowedHeaders: "Content-Type,Authorization", // Allowed headers
+    })
+  );
+
+  // Correct path to React build inside Docker
+
+  const clientBuildPath = path.join(__dirname, "frontend/dist");
+  console.log("client build path is ", clientBuildPath);
+  server.use("/inkspire", express.static(clientBuildPath));
+
+  server.get("/inkspire/*", (req, res) => {
+    res.sendFile(path.join(clientBuildPath, "index.html"));
+    console.log("index.html path is ", path.join(clientBuildPath, "index.html"));
+  });
+} else {
+  // Accept requests from different ports than backend port (3000) for development
+  server.use(cors());
+  server.get("/", (req, res) => res.send("Please set to production"));
+}
 
 const generateUsername = async (email) => {
   let username = email.split("@")[0];
@@ -841,7 +868,7 @@ server.post("/inkspire/api/notifications", verifyJWT, (req, res) => {
 
   const findQuery = { notification_for: user_id, user: { $ne: user_id } };
 
-  const skipDocs = (page - 1) * maxLimit;
+  let skipDocs = (page - 1) * maxLimit;
 
   if (filter !== "all") {
     findQuery.type = filter;
@@ -900,7 +927,7 @@ server.post("/inkspire/api/user-written-blogs", verifyJWT, (req, res) => {
   const { page, draft, query, deletedDocCount } = req.body;
 
   const maxLimit = 5;
-  const skipDocs = (page - 1) * maxLimit;
+  let skipDocs = (page - 1) * maxLimit;
 
   if (deletedDocCount) {
     skipDocs -= deletedDocCount;
